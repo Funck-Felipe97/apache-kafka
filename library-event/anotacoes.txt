@@ -1,0 +1,64 @@
+## Start up the Zookeeper
+./zookeeper-server-start.bat ../../config/zookeeper.properties
+
+## Configure the server.properties
+listeners=PLAINTEXT://localhost:9092
+auto.create.topics.enable=false
+
+## Start up the kafka Broker
+./kafka-server-start.bat ../../config/server.properties
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+## Create a new Topic
+kafka-topics.bat --create --topic test-topic -zookeeper localhost:2181 --replication-factor 1 --partitions 4
+
+## Produce a new message for Topic
+kafka-console-producer.bat --broker-list localhost:9092 --topic test-topic
+
+## Consume a new message for Topic
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+## Messages with keys
+## Mensagens que possuem key irão obrigatóriamente para a mesma partição do tópico, garantindo a ordem de entrega para o consumer
+
+## Producer message with keys
+kafka-console-producer.bat --broker-list localhost:9092 --topic test-topic --property "key.separator=-" --property "parse.key=true"
+
+## Consume message with keys
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic test-topic --from-beginning --property "key.separator=-" --property "print.key=true"
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+## Listing Topcis
+kafka-topics.bat --zookeeper localhost:2181 --list
+
+## Listing consumer from group
+.\kafka-consumer-groups.bat --bootstrap-server localhost:9092 --list
+
+## Describe Topis
+kafka-topics.bat --zookeeper localhost:2181 --describe
+
+## Describe spacific Topic
+kafka-topics.bat --zookeeper localhost:2181 --describe --topic <topic-name>
+
+## Delete topic
+kafka-topics.bat --zookeeper localhost:2181 --delete --topic <topic-name>
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+##  Long in Kafka
+properties in server.properties
+   log.retention.hours=168
+   log.dirs=/tmp/kafka-logs
+
+View Logs
+kafka-run-class.bat kafka.tools.DumpLogSegments --deep-iteration --files /tmp/kafka-logs/test-topic-0/00000000000000000000.log
+
+
+
+
+

@@ -1,0 +1,12 @@
+## Cluters with more a Kafka Broker
+
+- New server.properties files with the new broker details (server-2.properties)
+	broker.id=<unique-broker-id>
+	listeners=PLAINTEXT://localhost:<unique-port>
+	log.dirs=/tmp/<unique-kafka-folder>
+	auto.create.topics.enable=false (Optional)
+
+## create new topic
+kafka-topics.bat --create --topic test-topic -zookeeper localhost:2181 --replication-factor <number-brokers> --partitions 4
+ --replication-factor significa o número de cópia que uma mensagem vai ter, cada cópia vai para um broker, necessário em casos
+   de tolerancia de falhas
