@@ -2,6 +2,7 @@ package com.learnkafka.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.learnkafka.domain.LibraryEvent;
+import com.learnkafka.domain.LibraryEventType;
 import com.learnkafka.producer.LibraryEventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class LibraryEventResource {
     @ResponseStatus(CREATED)
     public ResponseEntity<LibraryEvent> saveAsynchronous(@RequestBody final LibraryEvent libraryEvent) throws JsonProcessingException {
         log.info("Sending asynchronous message");
+        libraryEvent.setType(LibraryEventType.NEW);
         producer.sendLibraryEvent(libraryEvent);
         return ResponseEntity.ok(libraryEvent);
     }
@@ -36,6 +38,7 @@ public class LibraryEventResource {
     @ResponseStatus(CREATED)
     public ResponseEntity<LibraryEvent> saveSynchronous(@RequestBody final LibraryEvent libraryEvent) throws Exception {
         log.info("Sending synchronous message");
+        libraryEvent.setType(LibraryEventType.NEW);
         SendResult<Integer, String> sendResult = producer.sendLibraryEventSynchronous(libraryEvent);
         log.info("SendResult is {}", sendResult);
         return ResponseEntity.ok(libraryEvent);
