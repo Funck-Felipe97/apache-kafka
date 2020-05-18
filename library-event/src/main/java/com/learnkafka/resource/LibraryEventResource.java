@@ -31,7 +31,7 @@ public class LibraryEventResource {
         log.info("Sending asynchronous message");
         libraryEvent.setType(LibraryEventType.NEW);
         producer.sendLibraryEvent(libraryEvent);
-        return ResponseEntity.ok(libraryEvent);
+        return ResponseEntity.status(CREATED).body(libraryEvent);
     }
 
     @PostMapping(path = "synchronous")
