@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Slf4j
@@ -27,7 +29,7 @@ public class LibraryEventResource {
 
     @PostMapping(path = "asynchronous")
     @ResponseStatus(CREATED)
-    public ResponseEntity<LibraryEvent> saveAsynchronous(@RequestBody final LibraryEvent libraryEvent) throws JsonProcessingException {
+    public ResponseEntity<LibraryEvent> saveAsynchronous(@RequestBody @Valid final LibraryEvent libraryEvent) throws JsonProcessingException {
         log.info("Sending asynchronous message");
         libraryEvent.setType(LibraryEventType.NEW);
         producer.sendLibraryEvent(libraryEvent);

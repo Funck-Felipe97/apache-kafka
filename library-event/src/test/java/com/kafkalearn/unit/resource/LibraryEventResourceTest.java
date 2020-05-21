@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ContextConfiguration(classes = LibraryEventApplication.class)
@@ -48,12 +49,35 @@ public class LibraryEventResourceTest {
 
         doNothing().when(producer).sendLibraryEvent(libraryEvent);
 
-        // when
+        // expect
         mockMvc.perform(post("/v1/library-events/asynchronous")
         .content(libraryEventBytes)
         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
-
-        // then
     }
+
+    @Test
+    void postLibraryEvent_4xx() throws Exception {
+        // given
+        Book book = Book.builder()
+                .author("Felipe")
+                .id(2)
+                .build();
+
+        LibraryEvent libraryEvent = LibraryEvent.builder()
+                .book(book)
+                .build();
+
+        byte[] libraryEventBytes = mapper.writeValueAsBytes(libraryEvent);
+
+        doNothing().when(producer).sendLibraryEvent(libraryEvent);
+
+        // expect
+        mockMvc.perform(post("/v1/library-events/asynchronous")
+                .content(libraryEventBytes)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().string("book.name - must not be blank"));
+    }
+
 }
