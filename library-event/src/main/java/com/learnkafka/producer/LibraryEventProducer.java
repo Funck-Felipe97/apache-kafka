@@ -35,11 +35,12 @@ public class LibraryEventProducer {
         listenableFuture.addCallback(callback);
     }
 
-    public void sendLibraryEventWithTopic(final LibraryEvent event) throws JsonProcessingException {
+    public ListenableFuture<SendResult<Integer, String>> sendLibraryEventWithTopic(final LibraryEvent event) throws JsonProcessingException {
         Integer key = event.getId();
         String value = mapper.writeValueAsString(event.getBook());
         ListenableFuture<SendResult<Integer, String>> listenableFuture = template.send(buildProducerRecord(key, value, TOPIC));
         listenableFuture.addCallback(callback);
+        return listenableFuture;
     }
 
     public SendResult<Integer, String> sendLibraryEventSynchronous(final LibraryEvent event) throws Exception {
