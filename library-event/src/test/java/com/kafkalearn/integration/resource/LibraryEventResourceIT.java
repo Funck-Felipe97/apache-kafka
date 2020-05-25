@@ -17,6 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = LibraryEventApplication.class)
 @EmbeddedKafka(topics = {"library-events"}, partitions = 3)
@@ -49,6 +50,56 @@ public class LibraryEventResourceIT {
 
         // then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    @Test
+    public void putLibraryEvent() {
+        // given
+        Book book = Book.builder()
+                .author("Felipe")
+                .name("Kafka")
+                .id(2)
+                .build();
+
+        LibraryEvent libraryEvent = LibraryEvent.builder()
+                .book(book)
+                .id(1)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("content-type", MediaType.APPLICATION_JSON.toString());
+        HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent, headers);
+
+        // when
+        ResponseEntity<LibraryEvent> response = restTemplate.exchange("/v1/library-events/asynchronous/1", PUT, request, LibraryEvent.class);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void putLibraryEvent_4xx() {
+        // given
+        Book book = Book.builder()
+                .author("Felipe")
+                .name("Kafka")
+                .id(2)
+                .build();
+
+        LibraryEvent libraryEvent = LibraryEvent.builder()
+                .book(book)
+                .id(1)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("content-type", MediaType.APPLICATION_JSON.toString());
+        HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent, headers);
+
+        // when
+        ResponseEntity<LibraryEvent> response = restTemplate.exchange("/v1/library-events/asynchronous/null", PUT, request, LibraryEvent.class);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
 }

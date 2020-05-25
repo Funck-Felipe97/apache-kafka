@@ -9,15 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -44,6 +42,15 @@ public class LibraryEventResource {
         SendResult<Integer, String> sendResult = producer.sendLibraryEventSynchronous(libraryEvent);
         log.info("SendResult is {}", sendResult);
         return ResponseEntity.ok(libraryEvent);
+    }
+
+    @PutMapping(path = "asynchronous/{id}")
+    @ResponseStatus(OK)
+    public ResponseEntity<LibraryEvent> updateAsynchronous(@RequestBody @Valid final LibraryEvent libraryEvent, @PathVariable @NotNull final Integer id) throws JsonProcessingException {
+        libraryEvent.setId(id);
+        libraryEvent.setType(LibraryEventType.UPDATE);
+        producer.sendLibraryEvent(libraryEvent);
+        return ResponseEntity.status(OK).body(libraryEvent);
     }
 
 }
