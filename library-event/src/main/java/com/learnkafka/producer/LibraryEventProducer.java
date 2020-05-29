@@ -30,7 +30,7 @@ public class LibraryEventProducer {
 
     public void sendLibraryEvent(final LibraryEvent event) throws JsonProcessingException {
         Integer key = event.getId();
-        String value = mapper.writeValueAsString(event.getBook());
+        String value = mapper.writeValueAsString(event);
         ListenableFuture<SendResult<Integer, String>> listenableFuture = template.sendDefault(key, value);
         listenableFuture.addCallback(callback);
     }

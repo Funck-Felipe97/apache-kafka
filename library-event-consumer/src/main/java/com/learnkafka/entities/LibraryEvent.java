@@ -1,4 +1,4 @@
-package com.learnkafka.domain;
+package com.learnkafka.entities;
 
 import lombok.*;
 
@@ -22,7 +22,7 @@ public class LibraryEvent {
     private Integer id;
 
     @ToString.Exclude
-    @OneToOne(mappedBy = "libraryEvent", cascade = {CascadeType.ALL})
+    @OneToOne(mappedBy = "libraryEvent", cascade = CascadeType.ALL)
     private Book book;
 
     @Enumerated(EnumType.STRING)
