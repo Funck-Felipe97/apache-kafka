@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Slf4j
 @Service
@@ -26,24 +28,30 @@ public class LibraryEventService {
         log.info("LibraryEvent : {}", libraryEvent);
         switch (libraryEvent.getType()) {
             case NEW:
-                saveNew(libraryEvent);
+                save(libraryEvent);
                 break;
             case UPDATE:
-                update(libraryEvent);
+                validate(libraryEvent);
+                save(libraryEvent);
                 break;
             default:
                 log.error("Invalid library event type");
         }
     }
 
-    private void saveNew(final LibraryEvent libraryEvent) {
+    private void save(final LibraryEvent libraryEvent) {
         libraryEvent.getBook().setLibraryEvent(libraryEvent);
         libraryEventRepository.save(libraryEvent);
         log.info("Successfully persisted the library event: {}", libraryEvent);
     }
 
-    private void update(final LibraryEvent libraryEvent) {
-
+    private void validate(final LibraryEvent libraryEvent) {
+        Optional.ofNullable(libraryEvent.getId()).ifPresentOrElse(id ->
+                        libraryEventRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Not a valid library event"))
+                , () -> {
+                    throw new IllegalArgumentException("Library event id is missing");
+                });
+        log.info("Validation is success for the library event: {} ", libraryEvent);
     }
 
 }
