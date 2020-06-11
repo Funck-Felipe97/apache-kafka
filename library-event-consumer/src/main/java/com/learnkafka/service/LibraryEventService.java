@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.RecoverableDataAccessException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class LibraryEventService {
 
     private final ObjectMapper mapper;
     private final LibraryEventRepository libraryEventRepository;
+    private final KafkaTemplate<Integer, String> kafkaTemplate;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void processLibraryEvent(final ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
@@ -58,6 +60,10 @@ public class LibraryEventService {
                     throw new IllegalArgumentException("Library event id is missing");
                 });
         log.info("Validation is success for the library event: {} ", libraryEvent);
+    }
+
+    public void handleRecovery(ConsumerRecord<Integer, String> consumerRecord) {
+        kafkaTemplate.sendDefault(consumerRecord.key(), consumerRecord.value());
     }
 
 }

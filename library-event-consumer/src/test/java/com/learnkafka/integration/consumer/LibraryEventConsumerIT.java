@@ -136,10 +136,10 @@ public class LibraryEventConsumerIT {
         latch.await(3, TimeUnit.SECONDS);
 
         // then
-        verify(libraryEventConsumer, times(3)).onMessage(isA(ConsumerRecord.class));
-        verify(libraryEventService, times(3)).processLibraryEvent(isA(ConsumerRecord.class));
+        verify(libraryEventConsumer, times(4)).onMessage(isA(ConsumerRecord.class));
+        verify(libraryEventService, times(4)).processLibraryEvent(isA(ConsumerRecord.class));
+        verify(libraryEventService, times(1)).handleRecovery(isA(ConsumerRecord.class));
     }
-
 
     public LibraryEvent createLibraryEvent() {
         Book book = Book.builder()
