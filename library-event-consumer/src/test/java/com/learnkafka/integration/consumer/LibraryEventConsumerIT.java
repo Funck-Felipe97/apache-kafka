@@ -24,12 +24,12 @@ import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = LibraryEventConsumerApplication.class)
@@ -115,6 +115,30 @@ public class LibraryEventConsumerIT {
         final LibraryEvent savedLibraryEvent = libraryEventRepository.findById(libraryEvent.getId()).get();
         assertEquals("Kafka 2", savedLibraryEvent.getBook().getName());
     }
+
+    @Test
+    void publish3EventsWhenHasError() throws Exception {
+        // given
+        LibraryEvent libraryEvent = createLibraryEvent();
+        libraryEvent.getBook().setLibraryEvent(libraryEvent);
+        libraryEventRepository.save(libraryEvent);
+
+        Book updatedBook = Book.builder().build();
+        libraryEvent.setType(LibraryEventType.UPDATE);
+        libraryEvent.setBook(updatedBook);
+
+        final String updatedJson = new ObjectMapper().writeValueAsString(libraryEvent);
+
+        // when
+        kafkaTemplate.sendDefault(libraryEvent.getId(), updatedJson).get();
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(3, TimeUnit.SECONDS);
+
+        // then
+        verify(libraryEventConsumer, times(3)).onMessage(isA(ConsumerRecord.class));
+        verify(libraryEventService, times(3)).processLibraryEvent(isA(ConsumerRecord.class));
+    }
+
 
     public LibraryEvent createLibraryEvent() {
         Book book = Book.builder()
