@@ -126,6 +126,7 @@ public class LibraryEventConsumerIT {
         Book updatedBook = Book.builder().build();
         libraryEvent.setType(LibraryEventType.UPDATE);
         libraryEvent.setBook(updatedBook);
+        libraryEvent.setId(000);
 
         final String updatedJson = new ObjectMapper().writeValueAsString(libraryEvent);
 
