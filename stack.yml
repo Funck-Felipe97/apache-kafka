@@ -1,0 +1,87 @@
+version: '2'
+services:
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    restart: on-failure
+    networks:
+      - cluster_net
+    
+  kafka_1:
+    image: confluentinc/cp-kafka:latest
+    networks:
+     - cluster_net
+    container_name: kafka_1
+    restart: on-failure
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_1:9092
+      
+  kafka_2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka_2
+    restart: on-failure
+    networks:
+      - cluster_net
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_2:9093
+    
+  kafka_3:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka_3
+    restart: on-failure
+    networks:
+      - cluster_net
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_3:9094
+    
+  producer:
+    build: library-event/
+    container_name: producer
+    image: library-event-producer
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka_1
+      - kafka_2
+      - kafka_3
+    networks:
+      - cluster_net
+    extra_hosts:
+      - "moby:127.0.0.1"
+    environment:
+      - spring.kafka.producer.bootstrap-servers=kafka_1:9092,kafka_2:9093,kafka_3:9094
+      
+  consumer:
+    build: library-event-consumer/
+    container_name: consumer
+    image: library-event-consumer
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka_1
+      - kafka_2
+      - kafka_3
+    networks:
+      - cluster_net
+    extra_hosts:
+      - "moby:127.0.0.1"
+    environment:
+      - spring.kafka.producer.bootstrap-servers=kafka_1:9092,kafka_2:9093,kafka_3:9094
+      - spring.kafka.consumer.bootstrap-servers=kafka_1:9092,kafka_2:9093,kafka_3:9094
+
+networks:
+  cluster_net:
